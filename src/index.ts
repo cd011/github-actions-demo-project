@@ -3,10 +3,7 @@ import cors from "cors";
 import body from "body-parser";
 
 const app = express();
-
 let server;
-
-// setup cors.
 
 app.use(
   cors({
@@ -16,32 +13,29 @@ app.use(
   })
 );
 
-// setup body parser.
-
 app.use(body.json({ limit: "100kb" }));
-
-// load all routes.
 
 app.use("/recipes", require("./routes/recipes"));
 
-async function startServer() {
-  try {
-    // Load express app to listen on config port.
-    const port = 3000
-    server = app.listen(port, () => {
-      console.log(`Service ready on :${port}`)
-    });
-  } catch (error) {
-    console.error("Failed to connect to the database:", error);
-    process.exit(1);
-  }
+async function startServer(port = 3000) {
+  return new Promise((resolve, reject) => {
+    try {
+      server = app.listen(port, () => {
+        console.log(`Service ready on :${port}`);
+        resolve(server);
+      });
+    } catch (error) {
+      console.error("Failed to connect to the database:", error);
+      reject(error);
+    }
+  });
 }
 
 function stop() {
-  console.log("Stopping server");
-  server.close();
+  if (server) {
+    console.log("Stopping server");
+    server.close();
+  }
 }
 
-export { server, startServer, stop };
-
-startServer();
+export { app, server, startServer, stop };
